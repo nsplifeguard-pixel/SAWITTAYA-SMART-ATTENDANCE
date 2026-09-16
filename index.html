@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Attendance | โรงเรียนแสวงหาวิทยาคม</title>
+<style>
+:root{--primary:#6f2b7b;--primary2:#a94bb5;--bg:#f6f3f8;--card:#fff;--text:#251d29;--muted:#756b78;--green:#16864a;--yellow:#b77900;--red:#c33b45;--blue:#2463b5;--border:#e8e0eb}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:linear-gradient(180deg,#4b1958,#702b7d);color:#fff;padding:18px;position:fixed;inset:0 auto 0 0;z-index:10}
+.brand{display:flex;gap:12px;align-items:center;padding:8px 4px 20px;border-bottom:1px solid #ffffff25}.brand img{width:54px;height:54px;border-radius:14px;object-fit:contain;background:#fff}.brand b{display:block;font-size:15px}.brand small{opacity:.75}
+.nav{margin-top:18px;display:grid;gap:7px}.nav button{background:transparent;color:#fff;text-align:left;padding:12px 14px;border-radius:12px;opacity:.9}.nav button:hover,.nav button.active{background:#ffffff1c;opacity:1}
+.main{margin-left:260px;width:calc(100% - 260px);padding:24px}.top{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:20px}.top h1{margin:0;font-size:25px}.pill{padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:13px}
+.page{display:none}.page.active{display:block}.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(5,minmax(0,1fr))}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:0 5px 20px #3b20330b}.stat b{font-size:29px;display:block;margin-top:6px}.stat span{color:var(--muted);font-size:13px}.green{color:var(--green)}.yellow{color:var(--yellow)}.red{color:var(--red)}.blue{color:var(--blue)}
+.two{grid-template-columns:1.2fr .8fr}.three{grid-template-columns:repeat(3,1fr)}
+.tablewrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}.table th{font-size:12px;color:var(--muted);background:#faf8fb}
+.btn{padding:10px 14px;border-radius:10px;background:var(--primary);color:#fff}.btn.secondary{background:#eee7f0;color:var(--primary)}.btn.danger{background:#ffe5e7;color:#9e2530}.btn.green{background:#16864a;color:#fff}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.toolbar input,.toolbar select,.form input,.form select{padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;outline:none;width:100%}.toolbar input{width:auto;min-width:220px}.form{display:grid;gap:10px}.form label{font-size:12px;color:var(--muted)}.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.formgrid .full{grid-column:1/-1}
+.tapbox{text-align:center;padding:35px}.taplogo{width:100px;height:100px;object-fit:contain;border-radius:22px;background:#fff;padding:8px;border:1px solid var(--border)}.tapinput{max-width:520px;margin:18px auto;display:flex;gap:8px}.tapinput input{flex:1;padding:15px;border:2px solid #d8c6dc;border-radius:13px;font-size:18px}.result{min-height:130px;display:grid;place-items:center}.ok{color:var(--green)}.fail{color:var(--red)}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}.b-present{background:#dcf5e7;color:#126d3d}.b-late{background:#fff0c9;color:#8a5d00}.b-absent{background:#ffe2e5;color:#a12d38}.b-leave{background:#e4edff;color:#315e9b}
+.kpi{font-size:34px;font-weight:800}.progress{height:9px;background:#eee7f0;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:var(--primary)}
+.modal{position:fixed;inset:0;background:#12091488;display:none;place-items:center;z-index:30;padding:18px}.modal.show{display:grid}.modalbox{background:#fff;border-radius:18px;padding:20px;width:min(620px,100%);max-height:90vh;overflow:auto}.modalhead{display:flex;justify-content:space-between;align-items:center}.close{background:#eee;border-radius:50%;width:34px;height:34px}
+.toast{position:fixed;right:20px;bottom:20px;background:#251d29;color:#fff;padding:13px 16px;border-radius:12px;display:none;z-index:50}.toast.show{display:block}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}.sidebar{width:78px}.brand div,.nav span{display:none}.brand{justify-content:center}.nav button{text-align:center}.main{margin-left:78px;width:calc(100% - 78px)}}@media(max-width:650px){.main{padding:14px}.stats{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><img src="school-logo.jpeg"><div><b>แสวงหาวิทยาคม</b><small>Smart Attendance</small></div></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">📊 <span>Dashboard</span></button>
+    <button data-page="tap">🪪 <span>แตะบัตรเข้าเรียน</span></button>
+    <button data-page="students">👨‍🎓 <span>นักเรียน</span></button>
+    <button data-page="attendance">📋 <span>การเข้าเรียน</span></button>
+    <button data-page="reports">📈 <span>รายงาน</span></button>
+    <button data-page="cards">💳 <span>จัดการบัตร</span></button>
+    <button data-page="settings">⚙️ <span>ตั้งค่า</span></button>
+  </nav>
+</aside>
+<main class="main">
+<header class="top"><div><h1 id="title">Dashboard</h1><div style="color:var(--muted);font-size:13px">ระบบเช็กชื่อเข้าเรียน • โรงเรียนแสวงหาวิทยาคม</div></div><div class="pill" id="clock"></div></header>
+
+<section id="dashboard" class="page active">
+  <div class="grid stats">
+    <div class="card stat"><span>นักเรียนทั้งหมด</span><b id="sTotal">0</b></div>
+    <div class="card stat"><span>มาเรียน</span><b class="green" id="sPresent">0</b></div>
+    <div class="card stat"><span>มาสาย</span><b class="yellow" id="sLate">0</b></div>
+    <div class="card stat"><span>ลา</span><b class="blue" id="sLeave">0</b></div>
+    <div class="card stat"><span>ยังไม่เข้าเรียน</span><b class="red" id="sAbsent">0</b></div>
+  </div>
+  <div class="grid two" style="margin-top:16px">
+    <div class="card"><h3>การแตะบัตรล่าสุด</h3><div class="tablewrap"><table class="table"><thead><tr><th>เวลา</th><th>นักเรียน</th><th>ห้อง</th><th>สถานะ</th></tr></thead><tbody id="recent"></tbody></table></div></div>
+    <div class="card"><h3>สรุปวันนี้</h3><div style="margin:20px 0"><div class="kpi" id="rate">0%</div><div style="color:var(--muted)">อัตราการเข้าเรียน</div></div><div class="progress"><i id="ratebar" style="width:0%"></i></div><hr style="border:0;border-top:1px solid var(--border);margin:20px 0"><div class="actions"><button class="btn" onclick="go('tap')">🪪 เปิดหน้าแตะบัตร</button><button class="btn secondary" onclick="go('students')">เพิ่มนักเรียน</button></div></div>
+  </div>
+</section>
+
+<section id="tap" class="page">
+  <div class="card tapbox">
+    <img class="taplogo" src="school-logo.jpeg">
+    <h2>กรุณาแตะบัตรนักเรียน</h2><p style="color:var(--muted)">ต่อเครื่องอ่าน RFID/NFC แบบ HID แล้ว UID จะถูกส่งเข้าช่องนี้โดยอัตโนมัติ</p>
+    <div class="tapinput"><input id="uidInput" placeholder="หรือกรอก UID เพื่อทดสอบ เช่น CARD001" autocomplete="off"><button class="btn" onclick="tapCard()">แตะบัตร</button></div>
+    <div class="result" id="tapResult"><div><div style="font-size:42px">🪪</div><b>พร้อมรับบัตร</b></div></div>
+  </div>
+  <div class="card"><h3>โหมด Kiosk</h3><p style="color:var(--muted)">กด F11 เพื่อเต็มหน้าจอ และวางเคอร์เซอร์ไว้ที่ช่อง UID เครื่องอ่านแบบคีย์บอร์ดสามารถพิมพ์ UID แล้วกด Enter ได้</p></div>
+</section>
+
+<section id="students" class="page">
+  <div class="card"><div class="toolbar"><input id="studentSearch" placeholder="ค้นหาชื่อ / รหัส / ห้อง / UID" oninput="renderStudents()"><button class="btn" onclick="openStudent()">＋ เพิ่มนักเรียน</button><button class="btn secondary" onclick="seedDemo()">โหลดข้อมูลตัวอย่าง</button><button class="btn secondary" onclick="exportCSV()">ส่งออก CSV</button><label class="btn secondary">นำเข้า CSV <input id="csvFile" type="file" accept=".csv" hidden onchange="importCSV(event)"></label></div>
+  <div class="tablewrap"><table class="table"><thead><tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>ชั้น/ห้อง</th><th>เลขที่</th><th>UID บัตร</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="studentRows"></tbody></table></div></div>
+</section>
+
+<section id="attendance" class="page">
+  <div class="card"><div class="toolbar"><input type="date" id="attDate" onchange="renderAttendance()"><select id="attClass" onchange="renderAttendance()"><option value="">ทุกห้อง</option></select><select id="attStatus" onchange="renderAttendance()"><option value="">ทุกสถานะ</option><option value="present">มาเรียน</option><option value="late">มาสาย</option><option value="leave">ลา</option><option value="absent">ขาด</option></select><button class="btn secondary" onclick="exportAttendance()">ส่งออก CSV</button></div><div class="tablewrap"><table class="table"><thead><tr><th>รหัส</th><th>ชื่อ</th><th>ห้อง</th><th>เวลา</th><th>สถานะ</th><th>แก้ไข</th></tr></thead><tbody id="attRows"></tbody></table></div></div>
+</section>
+
+<section id="reports" class="page">
+  <div class="grid three"><div class="card"><span>มาเรียน</span><div class="kpi green" id="rPresent">0</div></div><div class="card"><span>สาย</span><div class="kpi yellow" id="rLate">0</div></div><div class="card"><span>ขาด/ยังไม่เช็ก</span><div class="kpi red" id="rAbsent">0</div></div></div>
+  <div class="card" style="margin-top:16px"><h3>สรุปตามห้อง</h3><div class="tablewrap"><table class="table"><thead><tr><th>ห้อง</th><th>นักเรียน</th><th>มา</th><th>สาย</th><th>ลา</th><th>ขาด</th><th>อัตราเข้าเรียน</th></tr></thead><tbody id="reportRows"></tbody></table></div></div>
+</section>
+
+<section id="cards" class="page">
+  <div class="card"><h3>จัดการบัตร RFID/NFC</h3><p style="color:var(--muted)">บัตรแต่ละใบควรมี UID ไม่ซ้ำกัน สามารถแก้ไข UID ได้จากเมนูนักเรียน</p><div class="tablewrap"><table class="table"><thead><tr><th>UID</th><th>นักเรียน</th><th>ห้อง</th><th>สถานะบัตร</th><th>จัดการ</th></tr></thead><tbody id="cardRows"></tbody></table></div></div>
+</section>
+
+<section id="settings" class="page">
+  <div class="card"><h3>ตั้งค่าการเช็กชื่อ</h3><div class="formgrid form"><div><label>ชื่อโรงเรียน</label><input id="schoolName"></div><div><label>เวลาเริ่มเช็กชื่อ</label><input id="startTime" type="time"></div><div><label>เริ่มนับสายหลังเวลา</label><input id="lateTime" type="time"></div><div><label>กันการแตะซ้ำ (วินาที)</label><input id="duplicateSec" type="number" min="0"></div><div class="full actions"><button class="btn" onclick="saveSettings()">บันทึกการตั้งค่า</button><button class="btn secondary" onclick="resetAll()">รีเซ็ตข้อมูลทั้งหมด</button></div></div></div>
+  <div class="card" style="margin-top:16px"><h3>ข้อมูลระบบ</h3><p>ข้อมูลถูกเก็บใน LocalStorage ของเบราว์เซอร์เครื่องนี้ เหมาะสำหรับเดโม/ใช้งานเครื่องเดียว หากต้องการใช้หลายเครื่องหรือเก็บข้อมูลส่วนกลาง ให้ต่อ Backend/ฐานข้อมูลในขั้นถัดไป</p></div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="studentModal"><div class="modalbox"><div class="modalhead"><h3 id="modalTitle">เพิ่มนักเรียน</h3><button class="close" onclick="closeModal()">×</button></div><form class="form" id="studentForm"><input type="hidden" id="editId"><div class="formgrid"><div><label>รหัสนักเรียน</label><input id="fId" required></div><div><label>UID บัตร</label><input id="fUid" required></div><div class="full"><label>ชื่อ-นามสกุล</label><input id="fName" required></div><div><label>ชั้น</label><select id="fGrade"><option>ม.1</option><option>ม.2</option><option>ม.3</option><option>ม.4</option><option>ม.5</option><option>ม.6</option></select></div><div><label>ห้อง</label><input id="fRoom" value="1" required></div><div><label>เลขที่</label><input id="fNo" type="number" min="1" required></div><div><label>สถานะ</label><select id="fActive"><option value="1">ใช้งาน</option><option value="0">ไม่ใช้งาน</option></select></div></div><div class="actions"><button class="btn" type="submit">บันทึก</button><button class="btn secondary" type="button" onclick="closeModal()">ยกเลิก</button></div></form></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='saengsawittayakom_smart_attendance_v1';
+const today=()=>new Date().toISOString().slice(0,10);
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{students:[],attendance:[],settings:{schoolName:'โรงเรียนแสวงหาวิทยาคม',startTime:'07:30',lateTime:'08:00',duplicateSec:60}};
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function statusText(s){return {present:'มาเรียน',late:'มาสาย',leave:'ลา',absent:'ขาด'}[s]||s}
+function badge(s){return `<span class="badge b-${s}">${statusText(s)}</span>`}
+function classes(){return [...new Set(db.students.map(s=>s.grade+'/'+s.room))].sort()}
+function attendanceFor(date=today()){return db.attendance.filter(a=>a.date===date)}
+function statusFor(student,date=today()){return attendanceFor(date).find(a=>a.studentId===student.id)}
+function renderAll(){renderDashboard();renderStudents();renderAttendance();renderReports();renderCards();fillClasses();loadSettings()}
+function renderDashboard(){
+ const list=attendanceFor(), active=db.students.filter(s=>s.active);
+ const counts={present:0,late:0,leave:0}; list.forEach(a=>counts[a.status]=(counts[a.status]||0)+1);
+ const absent=Math.max(0,active.length-counts.present-counts.late-counts.leave);
+ sTotal.textContent=active.length;sPresent.textContent=counts.present;sLate.textContent=counts.late;sLeave.textContent=counts.leave;sAbsent.textContent=absent;
+ const rate=active.length?Math.round((counts.present+counts.late+counts.leave)/active.length*100):0;document.getElementById('rate').textContent=rate+'%';ratebar.style.width=rate+'%';
+ const rows=[...list].sort((a,b)=>(b.timestamp||'').localeCompare(a.timestamp||'')).slice(0,10);
+ recent.innerHTML=rows.map(a=>{const s=db.students.find(x=>x.id===a.studentId);return `<tr><td>${esc(a.time)}</td><td>${esc(s?.name||'-')}</td><td>${esc((s?.grade||'')+'/'+(s?.room||''))}</td><td>${badge(a.status)}</td></tr>`}).join('')||'<tr><td colspan="4">ยังไม่มีการแตะบัตร</td></tr>';
+}
+function renderStudents(){
+ const q=(studentSearch.value||'').toLowerCase();let arr=db.students.filter(s=>[s.id,s.name,s.uid,s.grade+'/'+s.room].join(' ').toLowerCase().includes(q));
+ studentRows.innerHTML=arr.map(s=>`<tr><td>${esc(s.id)}</td><td>${esc(s.name)}</td><td>${esc(s.grade+'/'+s.room)}</td><td>${esc(s.no)}</td><td><code>${esc(s.uid)}</code></td><td>${s.active?'🟢 ใช้งาน':'🔴 ปิด'}</td><td><div class="actions"><button class="btn secondary" onclick="openStudent('${s.id}')">แก้ไข</button><button class="btn danger" onclick="deleteStudent('${s.id}')">ลบ</button></div></td></tr>`).join('')||'<tr><td colspan="7">ไม่พบข้อมูล</td></tr>';
+}
+function fillClasses(){const cur=attClass.value;attClass.innerHTML='<option value="">ทุกห้อง</option>'+classes().map(c=>`<option>${esc(c)}</option>`).join('');attClass.value=cur}
+function renderAttendance(){
+ const d=attDate.value||today(), filter=attClass.value, st=attStatus.value;
+ const rows=db.students.filter(s=>s.active&&(!filter||s.grade+'/'+s.room===filter)).map(s=>{const a=statusFor(s,d);return {s,a,status:a?.status||'absent'}}).filter(x=>!st||x.status===st);
+ attRows.innerHTML=rows.map(x=>`<tr><td>${esc(x.s.id)}</td><td>${esc(x.s.name)}</td><td>${esc(x.s.grade+'/'+x.s.room)}</td><td>${esc(x.a?.time||'-')}</td><td>${badge(x.status)}</td><td><select onchange="setManualStatus('${x.s.id}','${d}',this.value)"><option value="absent" ${x.status==='absent'?'selected':''}>ขาด</option><option value="present" ${x.status==='present'?'selected':''}>มา</option><option value="late" ${x.status==='late'?'selected':''}>สาย</option><option value="leave" ${x.status==='leave'?'selected':''}>ลา</option></select></td></tr>`).join('');
+}
+function setManualStatus(id,date,status){let a=db.attendance.find(x=>x.studentId===id&&x.date===date);if(status==='absent'){if(a)db.attendance=db.attendance.filter(x=>x!==a)}else{if(!a){a={studentId:id,date,timestamp:new Date().toISOString(),time:new Date().toLocaleTimeString('th-TH',{hour12:false}),status};db.attendance.push(a)}else a.status=status}save();toast('อัปเดตสถานะแล้ว')}
+function renderReports(){
+ const list=attendanceFor(), active=db.students.filter(s=>s.active);const c={present:0,late:0,leave:0};list.forEach(a=>c[a.status]=(c[a.status]||0)+1);rPresent.textContent=c.present;rLate.textContent=c.late;rAbsent.textContent=Math.max(0,active.length-c.present-c.late-c.leave);
+ reportRows.innerHTML=classes().map(cl=>{const ss=active.filter(s=>s.grade+'/'+s.room===cl), ids=new Set(ss.map(s=>s.id)), aa=list.filter(a=>ids.has(a.studentId)), p=aa.filter(a=>a.status==='present').length,l=aa.filter(a=>a.status==='late').length,v=aa.filter(a=>a.status==='leave').length,ab=Math.max(0,ss.length-p-l-v),rate=ss.length?Math.round((p+l+v)/ss.length*100):0;return `<tr><td>${esc(cl)}</td><td>${ss.length}</td><td class="green">${p}</td><td class="yellow">${l}</td><td class="blue">${v}</td><td class="red">${ab}</td><td>${rate}%</td></tr>`}).join('')||'<tr><td colspan="7">ยังไม่มีข้อมูล</td></tr>';
+}
+function renderCards(){cardRows.innerHTML=db.students.map(s=>`<tr><td><code>${esc(s.uid)}</code></td><td>${esc(s.name)}</td><td>${esc(s.grade+'/'+s.room)}</td><td>${s.active?'🟢 ใช้งาน':'🔴 ระงับ'}</td><td><button class="btn secondary" onclick="openStudent('${s.id}')">แก้ไขบัตร</button></td></tr>`).join('')||'<tr><td colspan="5">ยังไม่มีบัตร</td></tr>'}
+function tapCard(){const uid=uidInput.value.trim();if(!uid){toast('กรุณาระบุ UID');return}const s=db.students.find(x=>x.uid.toLowerCase()===uid.toLowerCase()&&x.active);if(!s){tapResult.innerHTML='<div class="fail"><div style="font-size:45px">❌</div><b>ไม่พบบัตรนี้ในระบบ</b><div>'+esc(uid)+'</div></div>';uidInput.select();return}
+ const now=new Date(), date=today(), time=now.toLocaleTimeString('th-TH',{hour12:false}), dup=Number(db.settings.duplicateSec)||60;const old=db.attendance.find(a=>a.studentId===s.id&&a.date===date);if(old&&((now-new Date(old.timestamp))/1000)<dup){tapResult.innerHTML=`<div class="fail"><div style="font-size:45px">⚠️</div><b>แตะซ้ำ</b><div>${esc(s.name)} • เช็กชื่อแล้ว ${esc(old.time)} น.</div></div>`;toast('บัตรนี้เพิ่งถูกแตะ');return}
+ const late=time>db.settings.lateTime+':00';if(old)db.attendance=db.attendance.filter(a=>a!==old);db.attendance.push({studentId:s.id,date,time,timestamp:now.toISOString(),status:late?'late':'present'});
+ tapResult.innerHTML=`<div class="ok"><div style="font-size:45px">✅</div><h2 style="margin:4px">${esc(s.name)}</h2><div>${esc(s.grade+'/'+s.room)} เลขที่ ${esc(s.no)}</div><b>${late?'🟡 มาสาย':'🟢 มาเรียน'} • ${time} น.</b></div>`;uidInput.value='';save();uidInput.focus();
+}
+uidInput?.addEventListener('keydown',e=>{if(e.key==='Enter')tapCard()});
+function openStudent(id){studentModal.classList.add('show');document.getElementById('modalTitle').textContent=id?'แก้ไขนักเรียน':'เพิ่มนักเรียน';document.getElementById('editId').value=id||'';const s=db.students.find(x=>x.id===id);fId.value=s?.id||'';fUid.value=s?.uid||'';fName.value=s?.name||'';fGrade.value=s?.grade||'ม.1';fRoom.value=s?.room||'1';fNo.value=s?.no||'';fActive.value=s?.active?'1':'0'}
+function closeModal(){studentModal.classList.remove('show')}
+studentForm.addEventListener('submit',e=>{e.preventDefault();const oldId=editId.value;const obj={id:fId.value.trim(),uid:fUid.value.trim(),name:fName.value.trim(),grade:fGrade.value,room:fRoom.value.trim(),no:fNo.value,active:fActive.value==='1'};if(!obj.id||!obj.uid||!obj.name)return;if(db.students.some(s=>s.id===obj.id&&s.id!==oldId)){toast('รหัสนักเรียนซ้ำ');return}if(db.students.some(s=>s.uid.toLowerCase()===obj.uid.toLowerCase()&&s.id!==oldId)){toast('UID บัตรซ้ำ');return}if(oldId){const i=db.students.findIndex(s=>s.id===oldId);db.students[i]=obj}else db.students.push(obj);closeModal();save();toast('บันทึกนักเรียนแล้ว')});
+function deleteStudent(id){if(!confirm('ลบนักเรียนคนนี้? ประวัติการเข้าเรียนจะยังคงอยู่'))return;db.students=db.students.filter(s=>s.id!==id);save();toast('ลบแล้ว')}
+function seedDemo(){if(db.students.length&& !confirm('มีข้อมูลอยู่แล้ว ต้องการเพิ่มข้อมูลตัวอย่างหรือไม่?'))return;const demo=[['10001','CARD001','เด็กชาย กิตติพงษ์ ใจดี','ม.6','1',1],['10002','CARD002','เด็กหญิง พิมพ์ชนก แสงทอง','ม.6','1',2],['10003','CARD003','นาย ธนกร รักเรียน','ม.5','2',1],['10004','CARD004','นางสาว ชลธิชา ตั้งใจ','ม.4','3',5]];demo.forEach(x=>{if(!db.students.some(s=>s.id===x[0]))db.students.push({id:x[0],uid:x[1],name:x[2],grade:x[3],room:x[4],no:x[5],active:true})});save();toast('เพิ่มข้อมูลตัวอย่างแล้ว')}
+function csvEscape(v){return '"'+String(v??'').replaceAll('"','""')+'"'}
+function download(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function exportCSV(){download('students.csv','รหัส,UID,ชื่อ,ชั้น,ห้อง,เลขที่,สถานะ\\n'+db.students.map(s=>[s.id,s.uid,s.name,s.grade,s.room,s.no,s.active?'ใช้งาน':'ปิด'].map(csvEscape).join(',')).join('\\n'))}
+function exportAttendance(){const rows=attendanceFor(attDate.value||today());download('attendance.csv','วันที่,เวลา,รหัส,ชื่อ,ชั้น,ห้อง,สถานะ\\n'+rows.map(a=>{const s=db.students.find(x=>x.id===a.studentId);return [a.date,a.time,s?.id,s?.name,s?.grade,s?.room,statusText(a.status)].map(csvEscape).join(',')}).join('\\n'))}
+function importCSV(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const lines=r.result.replace(/^\uFEFF/,'').trim().split(/\r?\n/).slice(1);lines.forEach(line=>{const p=line.split(',').map(x=>x.replace(/^"|"$/g,'').replaceAll('""','"'));if(p.length>=6&&p[0]){const s={id:p[0],uid:p[1],name:p[2],grade:p[3],room:p[4],no:p[5],active:true};const i=db.students.findIndex(x=>x.id===s.id);if(i>=0)db.students[i]=s;else db.students.push(s)}});save();toast('นำเข้า CSV แล้ว')};r.readAsText(f,'utf-8')}
+function loadSettings(){schoolName.value=db.settings.schoolName;startTime.value=db.settings.startTime;lateTime.value=db.settings.lateTime;duplicateSec.value=db.settings.duplicateSec}
+function saveSettings(){db.settings={schoolName:schoolName.value||'โรงเรียนแสวงหาวิทยาคม',startTime:startTime.value||'07:30',lateTime:lateTime.value||'08:00',duplicateSec:Number(duplicateSec.value)||60};save();toast('บันทึกการตั้งค่าแล้ว')}
+function resetAll(){if(confirm('ยืนยันล้างข้อมูลทั้งหมด?')){localStorage.removeItem(KEY);location.reload()}}
+function go(page){document.querySelector(`[data-page="${page}"]`).click()}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');title.textContent=b.innerText.trim()})
+attDate.value=today();setInterval(()=>clock.textContent=new Date().toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'medium'}),1000);
+renderAll();uidInput.focus();
+</script>
+</body>
+</html>
